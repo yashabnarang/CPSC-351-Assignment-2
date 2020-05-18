@@ -3,86 +3,16 @@ CPSC-351 Assignment 2
 Yashab Narang and Kyle Ear
 */
 
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <queue>
-
-using namespace std;
-
-struct process
-{
-  int pid;
-  int arrivalTime, lifeTime;
-  int memPieces, memReq;
-};
-
-struct memoryPage
-{
-	int pageStart, pageEnd, _pid, pageNum, arrivalTime, endTime;
-};
-
-void getInputQueue(queue<process> _inputQueue)
-{
-  cout << "\tInput Queue:[";
-  while (!_inputQueue.empty())
-  {
-    cout << _inputQueue.front().pid;
-    _inputQueue.pop();
-    if(!_inputQueue.empty())
-      cout << " ";
-  }
-  cout << "]" << endl;
-}
-
-void printMemoryMap(vector<memoryPage>MemMap, int PageTotal)
-{
-    cout << "\tMemory Map:" << endl;
-
-    int Start = 0;
-    int End = 0;
-
-    for (int x = 0; x < PageTotal; x++)
-    {
-      memoryPage N = MemMap [x];
-
-   	 if (N._pid == -1)
-   	   Start = N.pageStart;
-   	 End = N.pageEnd;
-
-   	 if ( x == PageTotal -1)
-   	 {
-   	   cout << "\t\t" << Start << "-" << End << ":";
-   	   cout << "\t Free Frame(s) \n";
-   	 }
-    else
-    {
-   	 if (End != 0)
-   	 {
-       cout << "\t\t" << Start << "-" << End << ":";
-
-       cout << "\t Free Frame(s) \n";
-       cout<< "\t\t" << N.pageStart << "-" << N.pageEnd << ":";
-       cout<<"\tProcess" << N._pid << "\tPage" << N.pageNum << endl;
-   	 }
-
-   	 else
-     {
-   		 cout << "\t\t" << N.pageStart << "-" << N.pageEnd << ":";
-   		 cout << "\tProcess" << N._pid << "\tPage" << N.pageNum << endl;
-     }
-   }
- }
-}
+#include "functions.h"
 
 int main()
 {
 
+  long int virtualClock = 0;
   long int memorySize = 0;
   long int pageSize = 0;
-
-  long int virtualClock = 0;
   int numberProcesses = 0;
+  int timeLimit = 100000;
   int freePages = 0;
   char file;
   size_t result;
@@ -138,18 +68,16 @@ int main()
     process tmp;
 
     inFile >> tmp.pid;
-    inFile >> tmp.arrivalTime >> tmp.lifeTime;
-    inFile >> tmp.memPieces;
+    inFile >> tmp.arrivalTime >> tmp.lifetime;
+    inFile >> tmp.memory;
 
-    int total = 0;
-    int temp = 0;
-    for (int j = 0; j < tmp.memPieces; j++)
+    int temp = 0; int total = 0;
+    for (int j = 0; j < tmp.memory; j++)
     {
       inFile >> temp;
       total += temp;
     }
-    tmp.memReq = total;
-
+    tmp.memory = total;
     waitQueue.push(tmp);
   }
 
@@ -164,12 +92,10 @@ int main()
       begin.pageStart = k * pageSize;
       begin.pageEnd = ((k + 1) * pageSize) - 1;
       begin.pageNum = 0;
-      begin._pid = -1;
+      begin.pid = -1;
       begin.endTime = -1;
       memoryMap.push_back(begin);
     }
-
-    int timeLimit = 100000;
 
     while (virtualClock != timeLimit)
     {
@@ -202,8 +128,8 @@ int main()
 
         if(memoryMap[i].endTime == virtualClock)
         {
-            procDone = memoryMap[i]._pid;
-            memoryMap[i]._pid = -1;
+            procDone = memoryMap[i].pid;
+            memoryMap[i].pid = -1;
             memoryMap[i].pageNum = 0;
             memoryMap[i].endTime = 0;
             freePages++;
@@ -232,26 +158,26 @@ int main()
         }
         cout << "\tMM moves Process " << inputQueue.front().pid << " to memory\n";
         printMap = true;
-        int endT = virtualClock + inputQueue.front().lifeTime;
+        int endT = virtualClock + inputQueue.front().lifetime;
         int pNum = 1;
         int i = 0;
 
-        if (memoryMap[i]._pid == finProcID)
+        if (memoryMap[i].pid == finProcID)
           timeLimit = endT;
 
         memoryMap[i].arrivalTime = inputQueue.front().arrivalTime;
         turnAroundTimes.push_back(memoryMap[i].endTime - memoryMap[i].arrivalTime);
 
-        while ((inputQueue.front().memReq != 0) && (i < numOfPages))
+        while ((inputQueue.front().memory != 0) && (i < numOfPages))
         {
-          if (memoryMap[i]._pid == -1)
+          if (memoryMap[i].pid == -1)
           {
-            memoryMap[i]._pid = inputQueue.front().pid;
+            memoryMap[i].pid = inputQueue.front().pid;
             memoryMap[i].pageNum = pNum;
             memoryMap[i].endTime = endT;
             pNum++;
             freePages--;
-            inputQueue.front().memReq--;
+            inputQueue.front().memory--;
           }
           i++;
         }
