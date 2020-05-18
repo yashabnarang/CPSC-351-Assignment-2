@@ -15,24 +15,7 @@ Yashab Narang and Kyle Ear
 
 using namespace std;
 
-struct process {
-  int pid;
-  int arrivalTime, lifeTime;
-  int memPieces, memReq;
-};
-
-struct memPage {
-	int pageStart, pageEnd, _pid, pageNum, arrivalTime, endTime;
-};
-
-void getInputQueue(queue<process> _inputQueue) {
-  cout << "Input Queue:[";
-  while (!_inputQueue.empty()) {
-    cout << _inputQueue.front().pid << " ";
-    _inputQueue.pop();
-  }
-  cout << "]" << endl;
-}
+#include "data.h"
 
 void printMemoryMap(vector<memPage>MemMap, int PageTotal)
 {
@@ -199,7 +182,14 @@ int main() {
         cout << "Process " << waitQueue.front().pid << " arrives" << endl;
         inputQueue.push(waitQueue.front());
         waitQueue.pop();
-        getInputQueue(inputQueue);
+
+        cout << "Input Queue:[";
+        while (!_inputQueue.empty()) {
+          cout << _inputQueue.front().pid << " ";
+          _inputQueue.pop();
+        }
+        cout << "]" << endl;
+
         printMap = true;
         print = false;
         if (!waitQueue.empty()) {
